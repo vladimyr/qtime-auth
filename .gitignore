@@ -1,0 +1,14 @@
+# editors
+.idea/
+
+# deps
+node_modules/
+
+# credentials
+credentials.json
+
+# OS generated stuff
+.DS_Store
+.DS_Store?
+
+npm-debug.log
