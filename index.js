@@ -6,63 +6,41 @@ const cheerio = require('cheerio');
 const request = require('request');
 
 const baseUrl = 'http://management.dbtouch.com/';
+const makeUrl = (...parts) => urlJoin(baseUrl, ...parts);
 
-function createClient(cookieJar) {
-  let r = request.defaults({
-    jar: cookieJar,
-    followRedirect: true,
-    followAllRedirects: true
-  });
-  return Promise.promisifyAll(r);
-}
-
-function getSessionId(cookieJar) {
-  let sessionCookie = cookieJar.getCookies(baseUrl).find(c => c.key === 'JSESSIONID');
-  if (sessionCookie) return sessionCookie.value;
-}
-
-function makeUrl(...parts) {
-  return urlJoin(baseUrl, ...parts);
-}
-
-function isSuccess(resp) {
-  if (resp.statusCode !== 200) return false;
-  return resp.request.uri.pathname !== '/login/auth';
-}
-
-function login(username, password, parseInfo=false) {
-  let form = {
+function login(username, password, parseInfo = false) {
+  const form = {
     'txt_username': username,
     'txt_password': password,
     'submit': ''
   };
 
-  let jar = request.jar();
-  let r = createClient(jar);
+  const jar = request.jar();
+  const r = createClient(jar);
 
   return r.headAsync(makeUrl('/login/auth'))
     .then(() => r.postAsync(makeUrl('/login/saveAuth'), { form }))
     .then(resp => {
       if (!isSuccess(resp)) return Promise.reject(new Error('Invalid credentials!'));
-      let sessionId = getSessionId(jar);
+      const sessionId = getSessionId(jar);
       if (!parseInfo) return { sessionId };
       return Object.assign({ sessionId }, parseUserInfo(resp.body));
     });
 }
 
 function parseUserInfo(html) {
-  let $ = cheerio.load(html);
+  const $ = cheerio.load(html);
   $.prototype.getText = function() { return this.text().trim(); }
 
-  let profilePicture = $('.details-title .profile-picture').attr('src');
+  const profilePicture = $('.details-title .profile-picture').attr('src');
 
-  let $dataRows = $('.details-content .row');
-  let firstName = $dataRows.eq(0).find('div').text();
-  let lastName = $dataRows.eq(1).find('div').text();
-  let company = $dataRows.eq(3).find('div').text();
-  let email = $dataRows.eq(4).find('div').text();
-  let roles = $dataRows.eq(8).find('> div').children().map((_, el) => $(el).getText()).get();
-  let groups = $dataRows.eq(9).find('em').map((_, el) => $(el).getText()).get();
+  const $dataRows = $('.details-content .row');
+  const firstName = $dataRows.eq(0).find('div').text();
+  const lastName = $dataRows.eq(1).find('div').text();
+  const company = $dataRows.eq(3).find('div').text();
+  const email = $dataRows.eq(4).find('div').text();
+  const roles = $dataRows.eq(8).find('> div').children().map((_, el) => $(el).getText()).get();
+  const groups = $dataRows.eq(9).find('em').map((_, el) => $(el).getText()).get();
 
   return {
     profilePicture,
@@ -76,3 +54,22 @@ function parseUserInfo(html) {
 module.exports = {
   login, parseUserInfo
 };
+
+function createClient(cookieJar) {
+  const r = request.defaults({
+    jar: cookieJar,
+    followRedirect: true,
+    followAllRedirects: true
+  });
+  return Promise.promisifyAll(r);
+}
+
+function getSessionId(cookieJar) {
+  const sessionCookie = cookieJar.getCookies(baseUrl).find(c => c.key === 'JSESSIONID');
+  if (sessionCookie) return sessionCookie.value;
+}
+
+function isSuccess(resp) {
+  if (resp.statusCode !== 200) return false;
+  return resp.request.uri.pathname !== '/login/auth';
+}

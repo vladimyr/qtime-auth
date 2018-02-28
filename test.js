@@ -4,6 +4,9 @@ const { username, password } = require('./credentials.json');
 const { login } = require('./index.js');
 const test = require('tape');
 
+const isString = arg => typeof arg === 'string';
+const isUrl = arg => /^https?:\/\//.test(arg);
+
 test('login using fake credentials', t => {
   login('test@extensionengine.com', 'test', true)
     .catch(err => {
@@ -14,10 +17,36 @@ test('login using fake credentials', t => {
 });
 
 test('login using real credentials', t => {
-  login(username, password, true)
+  login(username, password, false)
     .then(res => {
-      t.comment(`sessionId = ${ res.sessionId }]`);
-      t.pass(`User (${ username }) succesfully logged in.`);
+      t.comment(`sessionId = ${res.sessionId}`);
+      t.pass(`User (${username}) succesfully logged in.`);
+      t.end();
     })
     .catch(err => t.end(err));
 });
+
+test('getting user data', t => {
+  login(username, password, true)
+    .then(res => {
+      t.pass(`User (${username}) succesfully logged in.`);
+      t.comment(`result = ${JSON.stringify(res)}`);
+      t.ok(isValidUser(res), 'User data is successfully fetched.');
+      t.end();
+    })
+    .catch(err => t.end(err));
+});
+
+function isValidUser(data = {}) {
+  const props = [
+    'firstName',
+    'lastName',
+    'profilePicture',
+    'email',
+    'company'
+  ];
+  const values = props.map(it => data[it])
+  return values.every(it => isString(it) && it)
+    && isUrl(data.profilePicture);
+}
+

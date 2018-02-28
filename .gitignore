@@ -1,5 +1,7 @@
 # editors
 .idea/
+.code/
+*.sublime-*
 
 # deps
 node_modules/
