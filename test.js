@@ -1,6 +1,8 @@
 'use strict';
 
-const { username, password } = require('./credentials.json');
+let { QTIME_USERNAME: username, QTIME_PASSWORD: password } = process.env;
+if (!username || !password) ({ username, password } = require('./credentials.json'));
+
 const { login } = require('./index.js');
 const test = require('tape');
 
@@ -49,4 +51,3 @@ function isValidUser(data = {}) {
   return values.every(it => isString(it) && it)
     && isUrl(data.profilePicture);
 }
-
