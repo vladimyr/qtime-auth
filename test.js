@@ -8,6 +8,7 @@ const test = require('tape');
 
 const isString = arg => typeof arg === 'string';
 const isUrl = arg => /^https?:\/\//.test(arg);
+const each = (obj, cb) => Object.keys(obj).forEach(key => cb(obj[key], key));
 
 test('login using fake credentials', t => {
   login('test@extensionengine.com', 'test', true)
@@ -32,8 +33,9 @@ test('getting user data', t => {
   login(username, password, true)
     .then(res => {
       t.pass(`User (${username}) succesfully logged in.`);
-      t.comment(`result = ${JSON.stringify(res)}`);
       t.ok(isValidUser(res), 'User data is successfully fetched.');
+      console.log('# user:');
+      each(res, (val, key) => console.log(`${key}:\t${JSON.stringify(val)}`));
       t.end();
     })
     .catch(err => t.end(err));
