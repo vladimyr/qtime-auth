@@ -30,7 +30,7 @@ function login(username, password, parseInfo = false) {
 
 function parseUserInfo(html) {
   const $ = cheerio.load(html);
-  $.prototype.getText = function() { return this.text().trim(); }
+  $.prototype.getText = function () { return this.text().trim(); };
 
   const profilePicture = $('.details-title .profile-picture').attr('src');
 
@@ -44,10 +44,12 @@ function parseUserInfo(html) {
 
   return {
     profilePicture,
-    firstName, lastName,
+    firstName,
+    lastName,
     email,
     company,
-    roles, groups
+    roles,
+    groups
   };
 }
 
@@ -55,7 +57,7 @@ module.exports = {
   login, parseUserInfo
 };
 
-function createClient(cookieJar) {
+function createClient(cookieJar = request.jar()) {
   const r = request.defaults({
     jar: cookieJar,
     followRedirect: true,

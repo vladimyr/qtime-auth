@@ -49,7 +49,7 @@ function isValidUser(data = {}) {
     'email',
     'company'
   ];
-  const values = props.map(it => data[it])
-  return values.every(it => isString(it) && it)
-    && isUrl(data.profilePicture);
+  const values = props.map(it => data[it]);
+  return values.every(it => isString(it) && it) &&
+         isUrl(data.profilePicture);
 }
