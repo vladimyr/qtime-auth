@@ -24,9 +24,9 @@ test('login using real credentials', t => {
     .then(res => {
       console.log(`sessionId = "${res.sessionId}"`);
       t.pass(`User (${username}) succesfully logged in.`);
-      t.end();
+      return logout(res.sessionId);
     })
-    .catch(err => t.end(err));
+    .then(t.end, t.end);
 });
 
 test('getting user data', t => {
@@ -36,9 +36,9 @@ test('getting user data', t => {
       t.ok(isValidUser(res), 'User data is successfully fetched.');
       console.log('# user:');
       each(res, (val, key) => console.log(`${key}:\t${JSON.stringify(val)}`));
-      t.end();
+      return logout(res.sessionId);
     })
-    .catch(err => t.end(err));
+    .then(t.end, t.end);
 });
 
 test('logout', t => {
