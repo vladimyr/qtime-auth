@@ -21,10 +21,23 @@ function login(username, password, parseInfo = false) {
   return r.headAsync(makeUrl('/login/auth'))
     .then(() => r.postAsync(makeUrl('/login/saveAuth'), { form }))
     .then(resp => {
-      if (!isSuccess(resp)) return Promise.reject(new Error('Invalid credentials!'));
+      if (!isSuccess(resp, path => path !== '/login/auth')) {
+        return Promise.reject(new Error('Invalid credentials!'));
+      }
       const sessionId = getSessionId(jar);
       if (!parseInfo) return { sessionId };
       return Object.assign({ sessionId }, parseUserInfo(resp.body));
+    });
+}
+
+function logout(sessionId) {
+  if (!sessionId) throw new Error('sessionId is required!');
+  const r = createClient();
+  return r.getAsync(makeUrl(`/logout/clear?sid=${sessionId}`))
+    .then(resp => {
+      if (!isSuccess(resp, path => path === '/login/auth')) {
+        return Promise.reject(new Error('Logout failed!'));
+      }
     });
 }
 
@@ -54,7 +67,7 @@ function parseUserInfo(html) {
 }
 
 module.exports = {
-  login, parseUserInfo
+  login, logout, parseUserInfo
 };
 
 function createClient(cookieJar = request.jar()) {
@@ -71,7 +84,7 @@ function getSessionId(cookieJar) {
   if (sessionCookie) return sessionCookie.value;
 }
 
-function isSuccess(resp) {
+function isSuccess(resp, cb = () => false) {
   if (resp.statusCode !== 200) return false;
-  return resp.request.uri.pathname !== '/login/auth';
+  return cb(resp.request.uri.pathname);
 }

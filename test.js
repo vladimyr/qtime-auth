@@ -3,7 +3,7 @@
 let { QTIME_USERNAME: username, QTIME_PASSWORD: password } = process.env;
 if (!username || !password) ({ username, password } = require('./credentials.json'));
 
-const { login } = require('./index.js');
+const { login, logout } = require('./index.js');
 const test = require('tape');
 
 const isString = arg => typeof arg === 'string';
@@ -22,7 +22,7 @@ test('login using fake credentials', t => {
 test('login using real credentials', t => {
   login(username, password, false)
     .then(res => {
-      t.comment(`sessionId = ${res.sessionId}`);
+      console.log(`sessionId = "${res.sessionId}"`);
       t.pass(`User (${username}) succesfully logged in.`);
       t.end();
     })
@@ -36,6 +36,20 @@ test('getting user data', t => {
       t.ok(isValidUser(res), 'User data is successfully fetched.');
       console.log('# user:');
       each(res, (val, key) => console.log(`${key}:\t${JSON.stringify(val)}`));
+      t.end();
+    })
+    .catch(err => t.end(err));
+});
+
+test('logout', t => {
+  login(username, password, false)
+    .then(res => {
+      console.log(`sessionId = "${res.sessionId}"`);
+      return res.sessionId;
+    })
+    .then(sessionId => logout(sessionId))
+    .then(() => {
+      t.pass('Successfully logged out.');
       t.end();
     })
     .catch(err => t.end(err));

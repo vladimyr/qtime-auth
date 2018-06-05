@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "lint": "eslint .",
-    "test": "tape test.js | tap-spec"
+    "test": "tape test.js | tap-spec",
+    "test:debug": "node --inspect-brk node_modules/.bin/tape test.js | tap-spec"
   },
   "keywords": [
     "dbtouch",
