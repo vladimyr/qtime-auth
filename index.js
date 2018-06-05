@@ -48,12 +48,14 @@ function parseUserInfo(html) {
   const profilePicture = $('.details-title .profile-picture').attr('src');
 
   const $dataRows = $('.details-content .row');
-  const firstName = $dataRows.eq(0).find('div').text();
-  const lastName = $dataRows.eq(1).find('div').text();
-  const company = $dataRows.eq(3).find('div').text();
-  const email = $dataRows.eq(4).find('div').text();
-  const roles = $dataRows.eq(8).find('> div').children().map((_, el) => $(el).getText()).get();
-  const groups = $dataRows.eq(9).find('em').map((_, el) => $(el).getText()).get();
+  const row = n => $dataRows.eq(n);
+  const text = el => $(el).getText();
+  const firstName = row(0).find('div').text();
+  const lastName = row(1).find('div').text();
+  const company = row(3).find('div').text();
+  const email = row(4).find('div').text();
+  const roles = row(8).find('> div > div').map((_, el) => text(el)).get();
+  const groups = row(9).find('em').map((_, el) => text(el)).get();
 
   return {
     profilePicture,
@@ -80,7 +82,8 @@ function createClient(cookieJar = request.jar()) {
 }
 
 function getSessionId(cookieJar) {
-  const sessionCookie = cookieJar.getCookies(baseUrl).find(c => c.key === 'JSESSIONID');
+  const predicate = cookie => cookie.key === 'JSESSIONID';
+  const sessionCookie = cookieJar.getCookies(baseUrl).find(predicate);
   if (sessionCookie) return sessionCookie.value;
 }
 
